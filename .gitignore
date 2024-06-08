@@ -1156,6 +1156,12 @@ double  b;
    */
   public double OCgrowth1;
 
+  public double c;
+
+  public double d;
+
+  public double cd;
+
   public double Vacant;
 
   public double UnderConstruction;
@@ -1201,9 +1207,12 @@ double  b;
     _assign_NormalPrice_Formula_xjal();
     _assign_NormalRent_Formula_xjal();
     _assign_OCgrowth_Formula_xjal();
+    _assign_IncomeTrend_Formula_xjal();
     _assign_OCgrowth1_Formula_xjal();
     _assign_SalesPrice_Formula_xjal();
     _assign_OwnershipCost_Formula_xjal();
+    _assign_DispIncome_Formula_xjal();
+    _assign_InitialOwnershipCost_Formula_xjal();
     _assign_AverageOwnershiptime_Formula_xjal();
     _assign_AverageRentalStay_Formula_xjal();
     _assign_Occupied_Formula_xjal();
@@ -1216,16 +1225,16 @@ double  b;
     _assign_SupplyCoef_Formula_xjal();
     _assign_Population_Formula_xjal();
     _assign_STD_Formula_xjal();
-    _assign_IncomeTrend_Formula_xjal();
+    _assign_c_Formula_xjal();
+    _assign_d_Formula_xjal();
     _assign_PotentialOwner_Formula_xjal();
     _assign_AvgLife_Formula_xjal();
-    _assign_DispIncome_Formula_xjal();
-    _assign_InitialOwnershipCost_Formula_xjal();
     _assign_Vout1_Formula_xjal();
     _assign_Vout2_Formula_xjal();
     _assign_OW_Formula_xjal();
     _assign_SW_Formula_xjal();
     _assign_homelesness_ratio_Formula_xjal();
+    _assign_cd_Formula_xjal();
     _assign_Vacant_Formula_xjal();
     _assign_Demolition_Formula_xjal();
     _assign_Demolition1_Formula_xjal();
@@ -1288,7 +1297,13 @@ Rent(0)
   @AnyLogicInternalCodegenAPI
   public void _assign_OCgrowth_Formula_xjal() {
     OCgrowth = 
-SSP1_INP2(time()) 
+SSP5_INP1(time()) 
+;
+  }
+  @AnyLogicInternalCodegenAPI
+  public void _assign_IncomeTrend_Formula_xjal() {
+    IncomeTrend = 
+SSP5_Income1(time()) 
 ;
   }
   @AnyLogicInternalCodegenAPI
@@ -1307,6 +1322,18 @@ NormalPrice
   public void _assign_OwnershipCost_Formula_xjal() {
     OwnershipCost = 
 Rate(OC(time()) * SalesPrice,(0.7 * OC(time()) * SalesPrice + 0.3 * OC(171) * OCgrowth* PriceABS(171)) * OCgrowth1,171) 
+;
+  }
+  @AnyLogicInternalCodegenAPI
+  public void _assign_DispIncome_Formula_xjal() {
+    DispIncome = 
+IncomeTrend 
+;
+  }
+  @AnyLogicInternalCodegenAPI
+  public void _assign_InitialOwnershipCost_Formula_xjal() {
+    InitialOwnershipCost = 
+OC(0) * PriceABS(0) 
 ;
   }
   @AnyLogicInternalCodegenAPI
@@ -1372,19 +1399,25 @@ HouseholdSizeABS(time())
   @AnyLogicInternalCodegenAPI
   public void _assign_Population_Formula_xjal() {
     Population = 
-SSP1_Pop2(time()) 
+SSP5_Pop1(time()) 
 ;
   }
   @AnyLogicInternalCodegenAPI
   public void _assign_STD_Formula_xjal() {
     STD = 
-sqrt(2) * normal_inverse((1 + SSP1_GINI(time()) / 100) / 2) 
+sqrt(2) * normal_inverse((1 + SSP5_GINI(time()) / 100) / 2) 
 ;
   }
   @AnyLogicInternalCodegenAPI
-  public void _assign_IncomeTrend_Formula_xjal() {
-    IncomeTrend = 
-SSP1_Income2(time()) 
+  public void _assign_c_Formula_xjal() {
+    c = 
+(DispIncome / SSP1_Income2(0)) 
+;
+  }
+  @AnyLogicInternalCodegenAPI
+  public void _assign_d_Formula_xjal() {
+    d = 
+(InitialOwnershipCost / OwnershipCost) 
 ;
   }
   @AnyLogicInternalCodegenAPI
@@ -1397,18 +1430,6 @@ SSP1_Income2(time())
   public void _assign_AvgLife_Formula_xjal() {
     AvgLife = 
 AverageBuildingLife 
-;
-  }
-  @AnyLogicInternalCodegenAPI
-  public void _assign_DispIncome_Formula_xjal() {
-    DispIncome = 
-IncomeTrend 
-;
-  }
-  @AnyLogicInternalCodegenAPI
-  public void _assign_InitialOwnershipCost_Formula_xjal() {
-    InitialOwnershipCost = 
-OC(0) * PriceABS(0) 
 ;
   }
   @AnyLogicInternalCodegenAPI
@@ -1439,6 +1460,12 @@ RetoDi2
   public void _assign_homelesness_ratio_Formula_xjal() {
     homelesness_ratio = 
 lognormal_cdf(log(1000 * IncomeTrend / RentPrice),STD,0.39) + 0.0043 
+;
+  }
+  @AnyLogicInternalCodegenAPI
+  public void _assign_cd_Formula_xjal() {
+    cd = 
+c * d 
 ;
   }
   @AnyLogicInternalCodegenAPI
@@ -1474,7 +1501,7 @@ Vout1 + (SW * (Vout1 + Vout2) - Vout1) / TimeToAdopt2 + Vacant * SW
   @AnyLogicInternalCodegenAPI
   public void _assign_Coef_Formula_xjal() {
     Coef = 
-1 + Coefficient / (1 + exp(-a * ((DispIncome / SSP1_Income2(0)) * (InitialOwnershipCost / OwnershipCost)) - b)) 
+1 + Coefficient / (1 + exp(-a * (cd) - b)) 
 ;
   }
   @AnyLogicInternalCodegenAPI
@@ -1492,19 +1519,19 @@ max((Vacant + Vout1 + Vout2 - SalesSupply),0)
   @AnyLogicInternalCodegenAPI
   public void _assign_Productivity_Formula_xjal() {
     Productivity = 
-PSSP1(time()) 
+PSSP5(time()) 
 ;
   }
   @AnyLogicInternalCodegenAPI
   public void _assign_GDP_Differene_Formula_xjal() {
     GDP_Differene = 
-GDPSSP12(time()) 
+GDPSSP51(time()) 
 ;
   }
   @AnyLogicInternalCodegenAPI
   public void _assign_CL_Formula_xjal() {
     CL = 
-CL1(time()) 
+CL5(time()) 
 ;
   }
   @AnyLogicInternalCodegenAPI
@@ -1637,8 +1664,11 @@ OwnershipCost / SalesPrice
   public void formulasExecute_xjal() {
     super.formulasExecute_xjal();
     _assign_OCgrowth_Formula_xjal();
+    _assign_IncomeTrend_Formula_xjal();
     _assign_OCgrowth1_Formula_xjal();
     _assign_OwnershipCost_Formula_xjal();
+    _assign_DispIncome_Formula_xjal();
+    _assign_InitialOwnershipCost_Formula_xjal();
     _assign_AverageOwnershiptime_Formula_xjal();
     _assign_AverageRentalStay_Formula_xjal();
     _assign_OctoDi1_Formula_xjal();
@@ -1648,16 +1678,16 @@ OwnershipCost / SalesPrice
     _assign_SupplyCoef_Formula_xjal();
     _assign_Population_Formula_xjal();
     _assign_STD_Formula_xjal();
-    _assign_IncomeTrend_Formula_xjal();
+    _assign_c_Formula_xjal();
+    _assign_d_Formula_xjal();
     _assign_PotentialOwner_Formula_xjal();
     _assign_AvgLife_Formula_xjal();
-    _assign_DispIncome_Formula_xjal();
-    _assign_InitialOwnershipCost_Formula_xjal();
     _assign_Vout1_Formula_xjal();
     _assign_Vout2_Formula_xjal();
     _assign_OW_Formula_xjal();
     _assign_SW_Formula_xjal();
     _assign_homelesness_ratio_Formula_xjal();
+    _assign_cd_Formula_xjal();
     _assign_Demolition_Formula_xjal();
     _assign_Demolition1_Formula_xjal();
     _assign_RentalDemand_Formula_xjal();
@@ -1760,13 +1790,13 @@ OwnershipCost / SalesPrice
   @Override
   @AnyLogicInternalCodegenAPI
   public int getRuntimeFormulaFlatEquationsCount_xjal() {
-    return super.getRuntimeFormulaFlatEquationsCount_xjal() + 54;
+    return super.getRuntimeFormulaFlatEquationsCount_xjal() + 57;
   }
 
   @Override
   @AnyLogicInternalCodegenAPI
   public int getInitialFormulaFlatEquationsCount_xjal() {
-    return super.getInitialFormulaFlatEquationsCount_xjal() + 60;
+    return super.getInitialFormulaFlatEquationsCount_xjal() + 63;
   }
 
   @AnyLogicInternalCodegenAPI
@@ -2429,6 +2459,9 @@ OwnershipCost / SalesPrice
       _ds_CC.update();
       _ds_PUncertainty.update();
       _ds_OCgrowth1.update();
+      _ds_c.update();
+      _ds_d.update();
+      _ds_cd.update();
       _ds_ConstructionStartRate.update();
       _ds_ConsCompleRate.update();
       _ds_Demolition.update();
@@ -4310,7 +4343,7 @@ exceloutputFile.writeDataSet(this.Incomeoverownership, "DirectModelOutptut",2,49
   private final static double[] _OCgrowthInsuranceExtreme1_Values_xjal = _OCgrowthInsuranceExtreme1_Values_xjal();
   @AnyLogicInternalCodegenAPI
   private final static double[] _OCgrowthInsuranceExtreme1_Values_xjal() {
-    return new double[] { 1.0, 1.0, 1.13,  };
+    return new double[] { 1.0, 1.0, 1.18,  };
   }
 
   /**
@@ -4865,6 +4898,45 @@ exceloutputFile.writeDataSet(this.Incomeoverownership, "DirectModelOutptut",2,49
     public void update( DataSet _d ) {
       if ( time() == _lastUpdateTime ) { return; }
       _d.add( time(), Main.this.OCgrowth1 );
+      _lastUpdateTime = time();
+    }
+  } );
+  /**
+   * Auto-created data set(s) for c
+   */
+  @AnyLogicInternalCodegenAPI
+  public DataSet _ds_c = new DataSet( 100, new DataUpdater_xjal() {
+    double _lastUpdateTime = Double.NaN;
+    @Override
+    public void update( DataSet _d ) {
+      if ( time() == _lastUpdateTime ) { return; }
+      _d.add( time(), Main.this.c );
+      _lastUpdateTime = time();
+    }
+  } );
+  /**
+   * Auto-created data set(s) for d
+   */
+  @AnyLogicInternalCodegenAPI
+  public DataSet _ds_d = new DataSet( 100, new DataUpdater_xjal() {
+    double _lastUpdateTime = Double.NaN;
+    @Override
+    public void update( DataSet _d ) {
+      if ( time() == _lastUpdateTime ) { return; }
+      _d.add( time(), Main.this.d );
+      _lastUpdateTime = time();
+    }
+  } );
+  /**
+   * Auto-created data set(s) for cd
+   */
+  @AnyLogicInternalCodegenAPI
+  public DataSet _ds_cd = new DataSet( 100, new DataUpdater_xjal() {
+    double _lastUpdateTime = Double.NaN;
+    @Override
+    public void update( DataSet _d ) {
+      if ( time() == _lastUpdateTime ) { return; }
+      _d.add( time(), Main.this.cd );
       _lastUpdateTime = time();
     }
   } );
@@ -6095,6 +6167,9 @@ this.writeOutput();
     _ds_CC.destroyUpdater_xjal();
     _ds_PUncertainty.destroyUpdater_xjal();
     _ds_OCgrowth1.destroyUpdater_xjal();
+    _ds_c.destroyUpdater_xjal();
+    _ds_d.destroyUpdater_xjal();
+    _ds_cd.destroyUpdater_xjal();
     _ds_ConstructionStartRate.destroyUpdater_xjal();
     _ds_ConsCompleRate.destroyUpdater_xjal();
     _ds_Demolition.destroyUpdater_xjal();
@@ -6250,4 +6325,3 @@ double Rate(double x, double y, double t){
 
 
 }
-
