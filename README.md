@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/812214795.svg)](https://zenodo.org/doi/10.5281/zenodo.11526447)
+
 #Description of the model:
 
 The model runs for 550 timesteps, with each step representing one month, starting from 2003. All necessary data to run the model are defined within it, eliminating the need to import data from external files.
